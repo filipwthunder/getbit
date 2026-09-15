@@ -1,0 +1,138 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <algorithm>
+
+using namespace std;
+
+// Rekord przechowujacy dane jednej osoby
+struct Person
+{
+    string firstName;
+    string lastName;
+    int number;
+};
+
+// Zamienia polskie litery na znaki pomocne przy sortowaniu
+string convertPolishLetters(string text)
+{
+    string result = "";
+
+    for (char letter : text)
+    {
+        switch (letter)
+        {
+            case 'ą': result += 'a'; break;
+            case 'ć': result += 'c'; break;
+            case 'ę': result += 'e'; break;
+            case 'ł': result += 'l'; break;
+            case 'ń': result += 'n'; break;
+            case 'ó': result += 'o'; break;
+            case 'ś': result += 's'; break;
+            case 'ź': result += 'z'; break;
+            case 'ż': result += 'z'; break;
+
+            case 'Ą': result += 'A'; break;
+            case 'Ć': result += 'C'; break;
+            case 'Ę': result += 'E'; break;
+            case 'Ł': result += 'L'; break;
+            case 'Ń': result += 'N'; break;
+            case 'Ó': result += 'O'; break;
+            case 'Ś': result += 'S'; break;
+            case 'Ź': result += 'Z'; break;
+            case 'Ż': result += 'Z'; break;
+
+            default: result += letter;
+        }
+    }
+
+    return result;
+}
+
+// Wczytuje dane osob z pliku
+int readPeople(string fileName, Person people[])
+{
+    ifstream inputFile(fileName);
+
+    if (!inputFile)
+    {
+        cout << "Blad otwarcia pliku!" << endl;
+        return 0;
+    }
+
+    int peopleCount = 0;
+
+    // Wczytywanie kolejnych rekordow
+    while (peopleCount < 30 &&
+           inputFile >> people[peopleCount].firstName
+                     >> people[peopleCount].lastName
+                     >> people[peopleCount].number)
+    {
+        peopleCount++;
+    }
+
+    inputFile.close();
+
+    return peopleCount;
+}
+
+// Sortuje osoby wedlug nazwiska
+void sortPeople(Person people[], int peopleCount)
+{
+    sort(people, people + peopleCount,
+         [](const Person& first, const Person& second)
+         {
+             string firstLastName = convertPolishLetters(first.lastName);
+             string secondLastName = convertPolishLetters(second.lastName);
+
+             return firstLastName < secondLastName;
+         });
+}
+
+// Zapisuje posortowane osoby do pliku
+void savePeople(string fileName, Person people[], int peopleCount)
+{
+    ofstream outputFile(fileName);
+
+    if (!outputFile)
+    {
+        cout << "Blad otwarcia pliku wynikowego!" << endl;
+        return;
+    }
+
+    // Zapisywanie osob jedna pod druga
+    for (int i = 0; i < peopleCount; i++)
+    {
+        outputFile << people[i].firstName << " "
+                   << people[i].lastName << " "
+                   << people[i].number << endl;
+    }
+
+    outputFile.close();
+}
+
+int main()
+{
+    const int maxPeople = 30;
+    Person people[maxPeople];
+
+    // 1. Wczytanie danych
+    int peopleCount = readPeople(
+        "C:\\Users\\Egzamin\\Documents\\Nowy Dokument tekstowy.txt",
+        people
+    );
+
+    // 2. Sortowanie nazwisk
+    sortPeople(people, peopleCount);
+
+    // 3. Zapisanie wyniku
+    savePeople(
+        "C:\\Users\\Egzamin\\Documents\\wynik.txt",
+        people,
+        peopleCount
+    );
+
+    cout << "Dane zostaly posortowane i zapisane." << endl;
+
+    return 0;
+}
